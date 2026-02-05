@@ -1,0 +1,83 @@
+Chrome CDP Workflow (Windows + WSL) — Stable Setup
+
+Purpose
+- Provide a reliable, persistent Chrome DevTools Protocol (CDP) endpoint for OpenCode/agents from WSL.
+- Avoid Profile 3 locks by using a dedicated CDP profile folder.
+
+Windows PowerShell (non-admin) — Required Steps
+
+1) Close Chrome
+   taskkill /F /IM chrome.exe
+
+2) Create a dedicated CDP profile (persistent)
+   $cdpDir = "$env:LOCALAPPDATA\ChromeCDPProfile"
+   if (-not (Test-Path $cdpDir)) { New-Item -ItemType Directory -Force -Path $cdpDir | Out-Null }
+   icacls "$cdpDir" /inheritance:e /grant "$($env:USERNAME):(OI)(CI)F" | Out-Null
+
+3) Launch Chrome with CDP enabled (stable)
+   Start-Process -FilePath "C:\Program Files\Google\Chrome\Application\chrome.exe" -ArgumentList "--remote-debugging-port=9333","--remote-debugging-address=127.0.0.1","--user-data-dir=$cdpDir","--profile-directory=Default","--no-first-run","--no-default-browser-check","about:blank"
+
+4) Verify CDP endpoint (must return JSON)
+   curl.exe http://127.0.0.1:9333/json/version
+
+WSL (optional) — Commands to run from WSL
+
+1) Close Chrome
+   cmd.exe /c taskkill /F /IM chrome.exe
+
+2) Launch Chrome with CDP enabled (stable)
+   cmd.exe /c start "" "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9333 --remote-debugging-address=127.0.0.1 --user-data-dir="%LOCALAPPDATA%\ChromeCDPProfile" --profile-directory=Default --no-first-run --no-default-browser-check about:blank
+
+3) Verify CDP endpoint from WSL
+   curl -s --connect-timeout 5 http://127.0.0.1:9333/json/version
+
+Notes
+- This uses a dedicated profile at C:\Users\<you>\AppData\Local\ChromeCDPProfile.
+- Sign in once to your Google account here; the login persists for this profile.
+- Do NOT delete the profile folder unless you want to reset sign-in.
+
+OpenCode / WSL Configuration
+- Ensure MCP Chrome DevTools points to:
+  http://127.0.0.1:9333
+
+Verify from WSL
+- curl -s --connect-timeout 5 http://127.0.0.1:9333/json/version
+
+Fallback: If WSL cannot reach Windows localhost
+
+1) Windows (Admin PowerShell)
+   netsh interface portproxy add v4tov4 listenport=9333 listenaddress=0.0.0.0 connectport=9333 connectaddress=127.0.0.1
+   New-NetFirewallRule -DisplayName "WSL Chrome Debug 9333" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 9333
+
+2) WSL bridge
+   WINDOWS_IP=$(grep nameserver /etc/resolv.conf | awk '{print $2}' | head -1)
+   nohup socat TCP-LISTEN:9334,fork,reuseaddr TCP:${WINDOWS_IP}:9333 >/dev/null 2>&1 &
+
+3) MCP endpoint
+   http://127.0.0.1:9334
+
+4) Verify
+   curl -s --connect-timeout 5 http://127.0.0.1:9334/json/version
+
+Common Failure Causes
+- WSL localhost != Windows localhost (need portproxy + socat)
+- Chrome not actually started with CDP flags (existing Chrome instance already running)
+- PowerShell run as Administrator (profile path not writable)
+- Port 9333 still in FIN_WAIT/CLOSE_WAIT; fully close before relaunch
+
+Prompt to give other AI agents (for other machines)
+
+You are setting up Windows Chrome DevTools for WSL-based automation.
+Use a dedicated CDP profile (not the main Profile 3) to avoid lock conflicts.
+Steps:
+1) In Windows PowerShell (non-admin), run:
+   taskkill /F /IM chrome.exe
+   $cdpDir = "$env:LOCALAPPDATA\ChromeCDPProfile"
+   Remove-Item -Recurse -Force $cdpDir -ErrorAction SilentlyContinue
+   New-Item -ItemType Directory -Force -Path $cdpDir | Out-Null
+   icacls "$cdpDir" /inheritance:e /grant "$($env:USERNAME):(OI)(CI)F" | Out-Null
+   Start-Process -FilePath "C:\Program Files\Google\Chrome\Application\chrome.exe" -ArgumentList "--remote-debugging-port=9333","--remote-debugging-address=127.0.0.1","--user-data-dir=$cdpDir","--profile-directory=Default","--no-first-run","--no-default-browser-check","about:blank"
+2) Verify:
+   curl.exe http://127.0.0.1:9333/json/version
+3) In WSL, set the MCP browser URL to http://127.0.0.1:9333.
+If WSL cannot reach Windows localhost, set up portproxy + socat and use http://127.0.0.1:9334 instead.
