@@ -47,3 +47,4 @@ curl -s --connect-timeout 5 http://127.0.0.1:9333/json/version
 - Sign in once; login persists for this profile.
 - Do **not** run PowerShell as Administrator (can cause “Failed to Create Data Directory”).
 - Do **not** delete the CDP profile on each run; keep it stable so sign-in persists.
+- If the profile is new (first run), **pause and ask the user to sign in** before continuing automated steps.

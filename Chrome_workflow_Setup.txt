@@ -73,8 +73,7 @@ Steps:
 1) In Windows PowerShell (non-admin), run:
    taskkill /F /IM chrome.exe
    $cdpDir = "$env:LOCALAPPDATA\ChromeCDPProfile"
-   Remove-Item -Recurse -Force $cdpDir -ErrorAction SilentlyContinue
-   New-Item -ItemType Directory -Force -Path $cdpDir | Out-Null
+   if (-not (Test-Path $cdpDir)) { New-Item -ItemType Directory -Force -Path $cdpDir | Out-Null }
    icacls "$cdpDir" /inheritance:e /grant "$($env:USERNAME):(OI)(CI)F" | Out-Null
    Start-Process -FilePath "C:\Program Files\Google\Chrome\Application\chrome.exe" -ArgumentList "--remote-debugging-port=9333","--remote-debugging-address=127.0.0.1","--user-data-dir=$cdpDir","--profile-directory=Default","--no-first-run","--no-default-browser-check","about:blank"
 2) Verify:
