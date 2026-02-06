@@ -44,7 +44,8 @@ curl -s --connect-timeout 5 http://127.0.0.1:9333/json/version
 
 ## Port fallback rule
 - Stay on port `9333` by default.
-- Only switch to `9334` if `9333` fails to return JSON after a retry.
+- Do **not** auto-switch to `9334` under any circumstance.
+- If `9333` fails twice, **ask the user** before changing ports or killing Chrome.
 
 ## Notes
 - This profile is **persistent** at `C:\Users\<you>\AppData\Local\ChromeCDPProfile`.
