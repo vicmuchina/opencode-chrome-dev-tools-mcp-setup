@@ -41,6 +41,32 @@ http://127.0.0.1:9333
 curl -s --connect-timeout 5 http://127.0.0.1:9333/json/version
 ```
 
+## If WSL suddenly stops connecting
+Run these in **Windows PowerShell** (non-admin):
+```
+wsl --shutdown
+```
+Then reopen WSL and retry:
+```
+curl -s --connect-timeout 5 http://127.0.0.1:9333/json/version
+```
+If it still fails, re-apply mirrored networking:
+```
+Set-Content -Path $env:USERPROFILE\.wslconfig -Value "[wsl2]`nnetworkingMode=mirrored`nlocalhostForwarding=true"
+wsl --shutdown
+```
+
+## WSL networking fix (only if 127.0.0.1 fails from WSL)
+Run these in **Windows PowerShell**:
+```
+Set-Content -Path $env:USERPROFILE\.wslconfig -Value "[wsl2]`nnetworkingMode=mirrored`nlocalhostForwarding=true"
+wsl --shutdown
+```
+Reopen WSL and test:
+```
+curl -s --connect-timeout 5 http://127.0.0.1:9333/json/version
+```
+
 ## Port fallback rule
 - Stay on port `9333` by default.
 - Do **not** auto-switch to `9334` under any circumstance.
