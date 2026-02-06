@@ -1,0 +1,17 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "chrome-devtools": {
+      "type": "local",
+      "enabled": true,
+      "timeout": 150000,
+      "command": [
+        "node",
+        "/home/vic/.local/share/chrome-devtools-mcp/node_modules/chrome-devtools-mcp/build/src/index.js",
+        "--browserUrl",
+        "http://127.0.0.1:9333",
+        "--viewport=1280x720"
+      ]
+    }
+  }
+}

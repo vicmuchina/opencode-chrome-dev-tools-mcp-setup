@@ -63,6 +63,9 @@ In `~/.config/opencode/opencode.json` set the Chrome DevTools MCP to **port 9333
 }
 ```
 
+Sample config snippet (redacted) is included in this repo:
+- `opencode.json.sample`
+
 ### Port fallback rule
 - **Stay on 9333** by default.
 - Only switch to **9334** if 9333 fails to return JSON after a retry.
