@@ -18,8 +18,12 @@ cmd.exe /c if not exist "%LOCALAPPDATA%\ChromeCDPProfile" mkdir "%LOCALAPPDATA%\
 ### 1) Launch Chrome with CDP (from WSL or Linux shell)
 Run these from WSL. Use `cmd.exe` only (no PowerShell) to avoid quoting/env issues.
 ```
-cmd.exe /c taskkill /F /IM chrome.exe
-cmd.exe /c start "" "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9333 --remote-debugging-address=127.0.0.1 --user-data-dir="%LOCALAPPDATA%\ChromeCDPProfile" --profile-directory=Default --no-first-run --no-default-browser-check about:blank
+if curl -s --connect-timeout 3 http://127.0.0.1:9333/json/version >/dev/null; then
+  echo "CDP already running on 9333. Do NOT kill Chrome."
+else
+  cmd.exe /c taskkill /F /IM chrome.exe
+  cmd.exe /c start "" "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9333 --remote-debugging-address=127.0.0.1 --user-data-dir="%LOCALAPPDATA%\ChromeCDPProfile" --profile-directory=Default --no-first-run --no-default-browser-check about:blank
+fi
 ```
 
 ### 2) Verify in Windows (must return JSON)
