@@ -19,9 +19,8 @@ cmd.exe /c if not exist "%LOCALAPPDATA%\ChromeCDPProfile" mkdir "%LOCALAPPDATA%\
 Run these from WSL. Use `cmd.exe` only (no PowerShell) to avoid quoting/env issues.
 ```
 if curl -s --connect-timeout 3 http://127.0.0.1:9333/json/version >/dev/null; then
-  echo "CDP already running on 9333. Do NOT kill Chrome."
+  echo "CDP already running on 9333. Reuse the existing Chrome session."
 else
-  cmd.exe /c taskkill /F /IM chrome.exe
   cmd.exe /c start "" "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9333 --remote-debugging-address=127.0.0.1 --user-data-dir="%LOCALAPPDATA%\ChromeCDPProfile" --profile-directory=Default --no-first-run --no-default-browser-check about:blank
 fi
 ```
@@ -53,3 +52,10 @@ curl -s --connect-timeout 5 http://127.0.0.1:9333/json/version
 - Do **not** run PowerShell as Administrator (can cause “Failed to Create Data Directory”).
 - Do **not** delete the CDP profile on each run; keep it stable so sign-in persists.
 - If the profile is new (first run), **pause and ask the user to sign in** before continuing automated steps.
+- Avoid killing Chrome; it can wipe session state and cause sign-out. Only reset if the user explicitly asks.
+
+## Manual reset (only if user requests)
+```
+cmd.exe /c taskkill /F /IM chrome.exe
+cmd.exe /c start "" "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9333 --remote-debugging-address=127.0.0.1 --user-data-dir="%LOCALAPPDATA%\ChromeCDPProfile" --profile-directory=Default --no-first-run --no-default-browser-check about:blank
+```

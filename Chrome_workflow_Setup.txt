@@ -22,19 +22,21 @@ Windows PowerShell (non-admin) — Required Steps
 
 WSL (optional) — Commands to run from WSL
 
-1) Close Chrome
-   cmd.exe /c taskkill /F /IM chrome.exe
+1) Launch Chrome only if CDP is not already running
+   if curl -s --connect-timeout 3 http://127.0.0.1:9333/json/version >/dev/null; then
+     echo "CDP already running on 9333. Reuse the existing Chrome session."
+   else
+     cmd.exe /c start "" "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9333 --remote-debugging-address=127.0.0.1 --user-data-dir="%LOCALAPPDATA%\ChromeCDPProfile" --profile-directory=Default --no-first-run --no-default-browser-check about:blank
+   fi
 
-2) Launch Chrome with CDP enabled (stable)
-   cmd.exe /c start "" "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9333 --remote-debugging-address=127.0.0.1 --user-data-dir="%LOCALAPPDATA%\ChromeCDPProfile" --profile-directory=Default --no-first-run --no-default-browser-check about:blank
-
-3) Verify CDP endpoint from WSL
+2) Verify CDP endpoint from WSL
    curl -s --connect-timeout 5 http://127.0.0.1:9333/json/version
 
 Notes
 - This uses a dedicated profile at C:\Users\<you>\AppData\Local\ChromeCDPProfile.
 - Sign in once to your Google account here; the login persists for this profile.
 - Do NOT delete the profile folder unless you want to reset sign-in.
+- Avoid killing Chrome; it can wipe session state and cause sign-out.
 
 OpenCode / WSL Configuration
 - Ensure MCP Chrome DevTools points to:
