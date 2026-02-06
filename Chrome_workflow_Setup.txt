@@ -46,13 +46,12 @@ Verify from WSL
 - curl -s --connect-timeout 5 http://127.0.0.1:9333/json/version
 
 If WSL suddenly stops connecting
-- Run in Windows PowerShell (non-admin):
-  wsl --shutdown
-- Reopen WSL and retry:
+- First check if mirrored networking is already set:
+  cmd.exe /c "type %USERPROFILE%\.wslconfig"
+- If it is already set correctly, do NOT change anything. Just retry:
   curl -s --connect-timeout 5 http://127.0.0.1:9333/json/version
-- If still failing, re-apply mirrored networking:
+- If it is missing, set it in Windows PowerShell (non-admin):
   Set-Content -Path $env:USERPROFILE\.wslconfig -Value "[wsl2]`nnetworkingMode=mirrored`nlocalhostForwarding=true"
-  wsl --shutdown
 
 Fallback: If WSL cannot reach Windows localhost
 

@@ -41,30 +41,40 @@ http://127.0.0.1:9333
 curl -s --connect-timeout 5 http://127.0.0.1:9333/json/version
 ```
 
-## If WSL suddenly stops connecting
-Run these in **Windows PowerShell** (non-admin):
-```
-wsl --shutdown
-```
-Then reopen WSL and retry:
-```
-curl -s --connect-timeout 5 http://127.0.0.1:9333/json/version
-```
-If it still fails, re-apply mirrored networking:
-```
-Set-Content -Path $env:USERPROFILE\.wslconfig -Value "[wsl2]`nnetworkingMode=mirrored`nlocalhostForwarding=true"
-wsl --shutdown
-```
-
 ## WSL networking fix (only if 127.0.0.1 fails from WSL)
-Run these in **Windows PowerShell**:
+First check if mirrored networking is already set (from WSL):
+```
+cmd.exe /c "type %USERPROFILE%\\.wslconfig"
+```
+If you see:
+```
+[wsl2]
+networkingMode=mirrored
+localhostForwarding=true
+```
+then do **not** change anything.
+
+If it is missing, run these in **Windows PowerShell**:
 ```
 Set-Content -Path $env:USERPROFILE\.wslconfig -Value "[wsl2]`nnetworkingMode=mirrored`nlocalhostForwarding=true"
-wsl --shutdown
 ```
 Reopen WSL and test:
 ```
 curl -s --connect-timeout 5 http://127.0.0.1:9333/json/version
+```
+
+## If WSL suddenly stops connecting
+1) Check if mirrored networking is already set:
+```
+cmd.exe /c "type %USERPROFILE%\\.wslconfig"
+```
+2) If it is already set correctly, **do not** change it. Just retry:
+```
+curl -s --connect-timeout 5 http://127.0.0.1:9333/json/version
+```
+3) If it is missing, set it in Windows PowerShell (non-admin):
+```
+Set-Content -Path $env:USERPROFILE\.wslconfig -Value "[wsl2]`nnetworkingMode=mirrored`nlocalhostForwarding=true"
 ```
 
 ## Port fallback rule
